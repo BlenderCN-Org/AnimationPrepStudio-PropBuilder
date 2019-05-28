@@ -162,12 +162,17 @@ class PropLinkerEditor : Editor {
 
 	public static void SetObjOffset(GameObject sceneObject, Hand hand) {
 		var offset = sceneObject.transform.Find ("ControllerOffset");
+
+
 		if (offset != null) {
+			//sceneObject.transform.position = Vector3.zero;
+			sceneObject.transform.rotation = Quaternion.identity;
+
 			Transform oldParent = sceneObject.transform.parent;
 
 			Transform tempContainer = new GameObject ("Temp").transform;
 			tempContainer.position = offset.position;
-			tempContainer.rotation = offset.rotation;
+			tempContainer.rotation = Quaternion.Inverse( offset.rotation );
 
 			sceneObject.transform.parent = tempContainer;
 

@@ -255,6 +255,27 @@ using System.IO;
 		EditorGUILayout.LabelField("Save changes to assetbundles:");
 		if (GUILayout.Button("Re-Build Assetbundles", customLabel)) {
 
+			var allPaths = AssetDatabase.GetAllAssetPaths ();
+			foreach (var assetPath in allPaths) {
+				if (assetPath.StartsWith(AnimPrepAssetPostprocessor.prefabsFolder)) {
+					//ensure the prefab is enabled before saving as assetbundle
+
+					string modelFileName = Path.GetFileNameWithoutExtension( assetPath );
+					GameObject modelAsset = AssetDatabase.LoadAssetAtPath<GameObject> (assetPath); //LOADING AN ASSET
+					if (modelAsset == null) {
+						continue;
+					}
+
+					if (!modelAsset.activeSelf) {
+						GameObject model = (GameObject)PrefabUtility.InstantiatePrefab(modelAsset);
+						model.SetActive (true);
+						PrefabUtility.SaveAsPrefabAsset (model, assetPath);
+						GameObject.DestroyImmediate (model);
+					}
+				}
+			}
+
+
 			var allShaderKeywordParams = GameObject.FindObjectsOfType<RendererShaderParams> ();
 
 			foreach (var shaderKeywordParams in allShaderKeywordParams) {

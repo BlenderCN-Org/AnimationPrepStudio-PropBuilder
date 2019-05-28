@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Custom/Standard Two Sided Soft Blend" {
+Shader "Hair/Standard Two Sided Soft Blend" {
     Properties {
         _Color ("Color", Color) = (1,1,1,1)
         [NoScaleOffset] _MainTex ("Albedo (RGB)", 2D) = "white" {}

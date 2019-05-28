@@ -83,7 +83,7 @@ public class AnimPrepAssetPostprocessor : AssetPostprocessor {
 
 	public static string thumbnailsFolder = "Thumbnails";
 
-	public const string prefabsFolder = "Assets/AnimPrep_Prefabs/"; //the folder to temporaraly store prefabs
+	public const string prefabsFolder = "Assets/AnimPrep_Prefabs"; //the folder to temporaraly store prefabs
 
 	public static char templateSeperator = '$';
 
@@ -120,6 +120,8 @@ public class AnimPrepAssetPostprocessor : AssetPostprocessor {
 			if (importer.userData.Contains (mappedTag)) {
 				return;
 			}	
+
+			importer.isReadable = true;
 
 			importer.importAnimation = true;
 			importer.animationType = ModelImporterAnimationType.Generic;
@@ -306,10 +308,11 @@ public class AnimPrepAssetPostprocessor : AssetPostprocessor {
 				}
 
 				string modelFileName = Path.GetFileNameWithoutExtension( assetPath );
-				string destinationPath = prefabsFolder + modelFileName + ".prefab";
+				string destinationPath = Path.Combine(prefabsFolder, modelFileName + ".prefab");
 
 				GameObject model = (GameObject)PrefabUtility.InstantiatePrefab(modelAsset);
 				GameObject real = GameObject.Instantiate(model); //this is a game object that we can re-arange and change parenting or objects, then save as the original prefab later on
+				real.SetActive(true);
 
 				real.name = model.name; //remove "(clone) or any other discrepancies from name"
 				GameObject.DestroyImmediate (model); //destroy the prefab as it will be overwritten by "real"
@@ -363,6 +366,9 @@ public class AnimPrepAssetPostprocessor : AssetPostprocessor {
 							}
 
 							if (materialsJson.ContainsKey (materialName)) {		
+								
+								Debug.Log ("materialName " + materialName);
+
 
 								var blenderMaterial = materialsJson [materialName];
 
@@ -380,41 +386,46 @@ public class AnimPrepAssetPostprocessor : AssetPostprocessor {
 								var use_map_emit = false;
 
 								foreach (var slot in blenderMaterial.texture_slots) { //check all slots to see if there are any spec or emmit textures
-									if (slot.use_map_color_diffuse) {
+									if (slot.use_map_color_diffuse) {										
 										//Debug.Log("use_map_color_diffuse " + slot.filename);
-										var texPath = AssetDatabase.GetAssetPath (material.mainTexture);
-										var folder = Path.GetDirectoryName (texPath);
+										//var texPath = AssetDatabase.GetAssetPath (material.mainTexture);
+										var texPath = Path.Combine(Path.GetDirectoryName(assetPath), slot.filename);
+										if (File.Exists (texPath)) {
+											var folder = Path.GetDirectoryName (texPath);
+											diffTex = AssetDatabase.LoadAssetAtPath (Path.Combine (folder, slot.filename), typeof(Texture2D)) as Texture2D;
 
-										diffTex = AssetDatabase.LoadAssetAtPath (Path.Combine (folder, slot.filename), typeof(Texture2D)) as Texture2D;
-
-										TextureImporter A = (TextureImporter)AssetImporter.GetAtPath (Path.Combine (folder, slot.filename));
-										enableAlpha = blenderMaterial.use_transparency && A.DoesSourceTextureHaveAlpha ();
+											TextureImporter A = (TextureImporter)AssetImporter.GetAtPath (Path.Combine (folder, slot.filename));
+											enableAlpha = blenderMaterial.use_transparency && A.DoesSourceTextureHaveAlpha ();
+										}
 									}
 									if (slot.use_map_normal) {		
 										//Debug.Log("use_map_normal " + slot.filename);
-										var texPath = AssetDatabase.GetAssetPath (material.mainTexture);
-										var folder = Path.GetDirectoryName (texPath);
-
-										bumpTex = AssetDatabase.LoadAssetAtPath (Path.Combine (folder, slot.filename), typeof(Texture2D)) as Texture2D;
-			
+										//var texPath = AssetDatabase.GetAssetPath (material.mainTexture);
+										var texPath = Path.Combine(Path.GetDirectoryName(assetPath), slot.filename);
+										if (File.Exists (texPath)) {
+											var folder = Path.GetDirectoryName (texPath);
+											bumpTex = AssetDatabase.LoadAssetAtPath (Path.Combine (folder, slot.filename), typeof(Texture2D)) as Texture2D;
+										}			
 									}
 									if (slot.use_map_specular) {
 										//Debug.Log("use_map_specular " + slot.filename);
-										var texPath = AssetDatabase.GetAssetPath (material.mainTexture);
-										var folder = Path.GetDirectoryName (texPath);
-										//var filename = Path.GetFileNameWithoutExtension (texPath);
-
-										specularTex = AssetDatabase.LoadAssetAtPath (Path.Combine (folder, slot.filename), typeof(Texture2D)) as Texture2D;
-
+										//var texPath = AssetDatabase.GetAssetPath (material.mainTexture);
+										var texPath = Path.Combine(Path.GetDirectoryName(assetPath), slot.filename);
+										if (File.Exists (texPath)) {
+											var folder = Path.GetDirectoryName (texPath);
+											specularTex = AssetDatabase.LoadAssetAtPath (Path.Combine (folder, slot.filename), typeof(Texture2D)) as Texture2D;
+										}
 									}
 									if (slot.use_map_emit) {
 										//Debug.Log("use_map_emit " + slot.filename);
-										var texPath = AssetDatabase.GetAssetPath (material.mainTexture);
-										var folder = Path.GetDirectoryName (texPath);
-
-										emissionTex = AssetDatabase.LoadAssetAtPath (Path.Combine (folder, slot.filename), typeof(Texture2D)) as Texture2D;
-
+										//var texPath = AssetDatabase.GetAssetPath (material.mainTexture);
+										var texPath = Path.Combine(Path.GetDirectoryName(assetPath), slot.filename);
+										if (File.Exists (texPath)) {
+											var folder = Path.GetDirectoryName (texPath);							
+											emissionTex = AssetDatabase.LoadAssetAtPath (Path.Combine (folder, slot.filename), typeof(Texture2D)) as Texture2D;
+										}
 										emit_factor = slot.emit_factor;
+										
 									}
 
 									use_map_color_diffuse |= slot.use_map_color_diffuse;
@@ -669,7 +680,7 @@ public class AnimPrepAssetPostprocessor : AssetPostprocessor {
 
 						if (Directory.Exists (assetDestFolder)) {
 							FileUtil.DeleteFileOrDirectory( Path.Combine (assetDestFolder, assetFileName));
-							FileUtil.MoveFileOrDirectory(assetPath, Path.Combine (assetDestFolder, assetFileName));
+							File.Move(assetPath, Path.Combine (assetDestFolder, assetFileName));
 
 							var thumbnailFolderAbs = Path.Combine (assetDestFolder, "thumbnails");
 							TakePortraitPictures (assetFileName, rootObjs, thumbnailFolderAbs); //update the portrait pictures
@@ -744,7 +755,7 @@ public class AnimPrepAssetPostprocessor : AssetPostprocessor {
 
 	static void TakePortraitPictures(string assetFileName, List<GameObject> rootObjs, string destFolder) {
 
-		string prefabPath = prefabsFolder + Path.GetFileNameWithoutExtension(assetFileName) + ".prefab";
+		string prefabPath = Path.Combine(prefabsFolder, Path.GetFileNameWithoutExtension(assetFileName) + ".prefab");
 
 		UnityEngine.Object prefab = AssetDatabase.LoadAssetAtPath(prefabPath, typeof(GameObject));
 
