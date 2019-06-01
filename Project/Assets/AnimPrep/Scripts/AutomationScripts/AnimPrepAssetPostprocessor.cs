@@ -367,9 +367,6 @@ public class AnimPrepAssetPostprocessor : AssetPostprocessor {
 
 							if (materialsJson.ContainsKey (materialName)) {		
 								
-								Debug.Log ("materialName " + materialName);
-
-
 								var blenderMaterial = materialsJson [materialName];
 
 								Texture2D diffTex = null;
