@@ -5,6 +5,7 @@ This project contains tools which help automate the process of converting .blend
 ## Getting Started
 
 ![Test Image 4](https://i.imgur.com/o2S9wMy.png)
+
 ![Test Image 4](https://i.imgur.com/SF4fElQ.png)
 * First be sure that the `Blender Application` field points to the valid blender.exe installed on your PC (V2.79).
 * Then click the "Import Prop Model" button to locate the .blend file containing the model you would like to import.
