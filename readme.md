@@ -16,8 +16,11 @@ This project contains tools which help automate the process of converting .blend
 ![Test Image 4](https://i.imgur.com/4ZbbFx1.png)
 ___
 Copy the entire folder:
+
 `prop$00000000-0000-0000-0000-000000000000$screwdriver`
+
 And paste it into:
+
 `C:\Users\myusername\AppData\LocalLow\Animation Prep Studios\Animation Prep Studio\VR_ImportObjs`
 ___
 ### Installing
